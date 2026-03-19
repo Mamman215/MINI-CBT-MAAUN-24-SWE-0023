@@ -1,8 +1,10 @@
-class Business:
-    def __init__(self, name, category, location):
-        self.name = name
-        self.category = category
-        self.location = location
+from datetime import datetime
 
-    def get_info(self):
-        return f"{self.name} - {self.category} ({self.location})"
+class Question:
+    def __init__(self, text, options, correct_answer):
+        self.text = text
+        self.options = options
+        self.correct_answer = correct_answer
+
+    def check_answer(self, answer):
+        return answer == self.correct_answer
