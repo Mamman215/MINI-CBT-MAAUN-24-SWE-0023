@@ -1,29 +1,55 @@
-from flask import Flask, render_template, request, redirect
-from models import Business
+from flask import Flask, render_template, request, redirect, url_for
+from models import Question
+from datetime import datetime
 
-# Templates are stored under assigment4/templates in this workspace.
-# Configure Flask to locate them from that folder.
-app = Flask(__name__, template_folder="assigment4/templates")
+app = Flask(__name__)
 
-businesses = []
+# Questions
+questions = [
+    Question("2 + 2 = ?", ["2", "3", "4", "5"], "4"),
+    Question("Capital of Nigeria?", ["Abuja", "Lagos", "Kano"], "Abuja"),
+    Question("Python is a?", ["Snake", "Programming Language", "Car"], "Programming Language")
+]
+
+current_index = 0
+score = 0
+
+# Stack for answers (Requirement)
+answer_stack = []
 
 @app.route('/')
-def home():
-    return render_template("index.html", businesses=businesses)
+def start():
+    return render_template('start.html')
 
-@app.route('/add', methods=['GET', 'POST'])
-def add_business():
+
+@app.route('/quiz', methods=['GET', 'POST'])
+def quiz():
+    global current_index, score
+
     if request.method == 'POST':
-        name = request.form['name']
-        category = request.form['category']
-        location = request.form['location']
+        answer = request.form['answer']
+        answer_stack.append(answer)  # STACK
 
-        new_business = Business(name, category, location)
-        businesses.append(new_business)
+        if questions[current_index].check_answer(answer):
+            score += 1
 
-        return redirect('/')
+        current_index += 1
 
-    return render_template("add_business.html")
+    if current_index >= len(questions):
+        return redirect(url_for('result'))
 
-if __name__ == "__main__":
+    return render_template('quiz.html', question=questions[current_index])
+
+
+@app.route('/result')
+def result():
+    time_submitted = datetime.now()
+    return render_template('result.html',
+                           score=score,
+                           total=len(questions),
+                           time=time_submitted,
+                           answers=answer_stack)
+
+
+if __name__ == '__main__':
     app.run(debug=True)
